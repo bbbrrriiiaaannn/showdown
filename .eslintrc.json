@@ -23,5 +23,12 @@
     "array-bracket-spacing": [2, "never", {"singleValue": false}],
     "space-in-parens": [2, "never"],
     "no-multiple-empty-lines": 2
+  },
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module",
+    "ecmaFeatures": {
+        "jsx": true
+    }
   }
 }

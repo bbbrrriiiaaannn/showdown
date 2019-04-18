@@ -185,3 +185,5 @@ function allOptionsOn () {
   }
   return ret;
 }
+
+export { getDefaultOpts, allOptionsOn }

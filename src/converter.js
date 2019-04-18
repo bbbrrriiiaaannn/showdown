@@ -2,13 +2,17 @@
  * Created by Estevao on 31-05-2015.
  */
 
+import * as helpers from './helpers.js';
+import globalProps from './globalProps.js';
+import * as makehtml from './subParsers/makehtml/index.js';
+
 /**
  * Showdown Converter class
  * @class
  * @param {object} [converterOptions]
  * @returns {Converter}
  */
-showdown.Converter = function (converterOptions) {
+const Converter = function (converterOptions) {
   'use strict';
 
   var
@@ -43,7 +47,8 @@ showdown.Converter = function (converterOptions) {
       /**
        * The flavor set in this converter
        */
-      setConvFlavor = setFlavor,
+      // setConvFlavor = setFlavor,
+      setConvFlavor = globalProps.setFlavor,
 
     /**
      * Metadata of the document
@@ -64,9 +69,9 @@ showdown.Converter = function (converterOptions) {
   function _constructor () {
     converterOptions = converterOptions || {};
 
-    for (var gOpt in globalOptions) {
-      if (globalOptions.hasOwnProperty(gOpt)) {
-        options[gOpt] = globalOptions[gOpt];
+    for (var gOpt in globalProps.globalOptions) {
+      if (globalProps.globalOptions.hasOwnProperty(gOpt)) {
+        options[gOpt] = globalProps.globalOptions[gOpt];
       }
     }
 
@@ -83,7 +88,7 @@ showdown.Converter = function (converterOptions) {
     }
 
     if (options.extensions) {
-      showdown.helper.forEach(options.extensions, _parseExtension);
+      helpers.forEach(options.extensions, _parseExtension);
     }
   }
 
@@ -97,8 +102,8 @@ showdown.Converter = function (converterOptions) {
 
     name = name || null;
     // If it's a string, the extension was previously loaded
-    if (showdown.helper.isString(ext)) {
-      ext = showdown.helper.stdExtName(ext);
+    if (helpers.isString(ext)) {
+      ext = helpers.stdExtName(ext);
       name = ext;
 
       // LEGACY_SUPPORT CODE
@@ -109,8 +114,8 @@ showdown.Converter = function (converterOptions) {
         return;
       // END LEGACY SUPPORT CODE
 
-      } else if (!showdown.helper.isUndefined(extensions[ext])) {
-        ext = extensions[ext];
+      } else if (!helpers.isUndefined(globalProps.extensions[ext])) {
+        ext = globalProps.extensions[ext];
 
       } else {
         throw Error('Extension "' + ext + '" could not be loaded. It was either not found or is not a valid extension.');
@@ -121,7 +126,7 @@ showdown.Converter = function (converterOptions) {
       ext = ext();
     }
 
-    if (!showdown.helper.isArray(ext)) {
+    if (!helpers.isArray(ext)) {
       ext = [ext];
     }
 
@@ -152,7 +157,7 @@ showdown.Converter = function (converterOptions) {
 
   }
 
-  /**
+   /**
    * LEGACY_SUPPORT
    * @param {*} ext
    * @param {string} name
@@ -190,7 +195,7 @@ showdown.Converter = function (converterOptions) {
    * @param {function} callback
    */
   function listen (name, callback) {
-    if (!showdown.helper.isString(name)) {
+    if (!helpers.isString(name)) {
       throw Error('Invalid argument in converter.listen() method: name must be a string, but ' + typeof name + ' given');
     }
 
@@ -217,7 +222,7 @@ showdown.Converter = function (converterOptions) {
    * @param {{}} options Converter Options
    * @param {{}} globals Converter globals
    * @param {{}} pParams extra params for event
-   * @returns showdown.helper.Event
+   * @returns helpers.Event
    * @private
    */
   this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
@@ -227,7 +232,7 @@ showdown.Converter = function (converterOptions) {
     params.text = text;
     params.options = options;
     params.globals = globals;
-    var event = new showdown.helper.Event(evtName, text, params);
+    var event = new helpers.Event(evtName, text, params);
 
     if (listeners.hasOwnProperty(evtName)) {
       for (var ei = 0; ei < listeners[evtName].length; ++ei) {
@@ -307,7 +312,7 @@ showdown.Converter = function (converterOptions) {
     text = '\n\n' + text + '\n\n';
 
     // detab
-    text = showdown.subParser('makehtml.detab')(text, options, globals);
+    text = makehtml.detabParser(text, options, globals);
 
     /**
      * Strip any lines consisting only of spaces and tabs.
@@ -318,20 +323,20 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/^[ \t]+$/mg, '');
 
     //run languageExtensions
-    showdown.helper.forEach(langExtensions, function (ext) {
-      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
+    helpers.forEach(langExtensions, function (ext) {
+      text = makehtml.runExtensionParser(ext, text, options, globals);
     });
 
     // run the sub parsers
-    text = showdown.subParser('makehtml.metadata')(text, options, globals);
-    text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
-    text = showdown.subParser('makehtml.githubCodeBlocks')(text, options, globals);
-    text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
-    text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
-    text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
-    text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
-    text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
-    text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
+    text = makehtml.metadataParser(text, options, globals);
+    text = makehtml.hashPreCodeTagsParser(text, options, globals);
+    text = makehtml.githubCodeBlocksParser(text, options, globals);
+    text = makehtml.hashHTMLBlocksParser(text, options, globals);
+    text = makehtml.hashCodeTagsParser(text, options, globals);
+    text = makehtml.stripLinkDefinitionsParser(text, options, globals);
+    text = makehtml.blockGamutParser(text, options, globals);
+    text = makehtml.unhashHTMLSpansParser(text, options, globals);
+    text = makehtml.unescapeSpecialCharsParser(text, options, globals);
 
     // attacklab: Restore dollar signs
     text = text.replace(/¨D/g, '$$');
@@ -340,11 +345,11 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/¨T/g, '¨');
 
     // render a complete html document instead of a partial if the option is enabled
-    text = showdown.subParser('makehtml.completeHTMLDocument')(text, options, globals);
+    text = makehtml.completeHTMLDocumentParser(text, options, globals);
 
     // Run output modifiers
-    showdown.helper.forEach(outputModifiers, function (ext) {
-      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
+    helpers.forEach(outputModifiers, function (ext) {
+      text = makehtml.runExtensionParser(ext, text, options, globals);
     });
 
     // update metadata
@@ -368,7 +373,7 @@ showdown.Converter = function (converterOptions) {
     // ex: <em>this is</em> <strong>sparta</strong>
     src = src.replace(/>[ \t]+</, '>¨NBSP;<');
 
-    var doc = showdown.helper.document.createElement('div');
+    var doc = window.document.createElement('div');
     doc.innerHTML = src;
 
     var globals = {
@@ -433,7 +438,7 @@ showdown.Converter = function (converterOptions) {
           }
 
           // unescape html entities in content
-          content = showdown.helper.unescapeHTMLEntities(content);
+          content = helpers.unescapeHTMLEntities(content);
 
           presPH.push(content);
           pres[i].outerHTML = '<precode language="' + language + '" precodenum="' + i.toString() + '"></precode>';
@@ -498,10 +503,10 @@ showdown.Converter = function (converterOptions) {
    * @param {string} name
    */
   this.setFlavor = function (name) {
-    if (!flavor.hasOwnProperty(name)) {
+    if (!globalProps.flavor.hasOwnProperty(name)) {
       throw Error(name + ' flavor was not found');
     }
-    var preset = flavor[name];
+    var preset = globalProps.flavor[name];
     setConvFlavor = name;
     for (var option in preset) {
       if (preset.hasOwnProperty(option)) {
@@ -525,7 +530,7 @@ showdown.Converter = function (converterOptions) {
    * @param {Array} extension
    */
   this.removeExtension = function (extension) {
-    if (!showdown.helper.isArray(extension)) {
+    if (!helpers.isArray(extension)) {
       extension = [extension];
     }
     for (var a = 0; a < extension.length; ++a) {
@@ -600,3 +605,5 @@ showdown.Converter = function (converterOptions) {
     metadata.raw = raw;
   };
 };
+
+export default Converter;

@@ -2,15 +2,13 @@
  * showdownjs helper functions
  */
 
-if (!showdown.hasOwnProperty('helper')) {
-  showdown.helper = {};
-}
 
-if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
-  var jsdom = require('jsdom');
-  this.window = new jsdom.JSDOM('', {}).window; // jshint ignore:line
-}
-showdown.helper.document = this.window.document;
+//  if (typeof document === 'undefined' && typeof window === 'undefined') {
+//   var jsdom = require('jsdom');
+//   this.window = new jsdom.JSDOM('', {}).window; // jshint ignore:line
+// }
+// const document = this.window.document;
+// export { document };
 
 /**
  * Check if var is string
@@ -18,10 +16,11 @@ showdown.helper.document = this.window.document;
  * @param {string} a
  * @returns {boolean}
  */
-showdown.helper.isString = function (a) {
+const isString = function (a) {
   'use strict';
   return (typeof a === 'string' || a instanceof String);
 };
+export { isString };
 
 /**
  * Check if var is a function
@@ -29,11 +28,12 @@ showdown.helper.isString = function (a) {
  * @param {*} a
  * @returns {boolean}
  */
-showdown.helper.isFunction = function (a) {
+const isFunction = function (a) {
   'use strict';
   var getType = {};
   return a && getType.toString.call(a) === '[object Function]';
 };
+export { isFunction };
 
 /**
  * isArray helper function
@@ -41,10 +41,11 @@ showdown.helper.isFunction = function (a) {
  * @param {*} a
  * @returns {boolean}
  */
-showdown.helper.isArray = function (a) {
+const isArray = function (a) {
   'use strict';
   return Array.isArray(a);
 };
+export { isArray };
 
 /**
  * Check if value is undefined
@@ -52,10 +53,11 @@ showdown.helper.isArray = function (a) {
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
  */
-showdown.helper.isUndefined = function (value) {
+const isUndefined = function (value) {
   'use strict';
   return typeof value === 'undefined';
 };
+export { isUndefined };
 
 /**
  * ForEach helper function
@@ -64,24 +66,24 @@ showdown.helper.isUndefined = function (value) {
  * @param {*} obj
  * @param {function} callback Accepts 3 params: 1. value, 2. key, 3. the original array/object
  */
-showdown.helper.forEach = function (obj, callback) {
+const forEach = function (obj, callback) {
   'use strict';
   // check if obj is defined
-  if (showdown.helper.isUndefined(obj)) {
+  if (isUndefined(obj)) {
     throw new Error('obj param is required');
   }
 
-  if (showdown.helper.isUndefined(callback)) {
+  if (isUndefined(callback)) {
     throw new Error('callback param is required');
   }
 
-  if (!showdown.helper.isFunction(callback)) {
+  if (!isFunction(callback)) {
     throw new Error('callback param must be a function/closure');
   }
 
   if (typeof obj.forEach === 'function') {
     obj.forEach(callback);
-  } else if (showdown.helper.isArray(obj)) {
+  } else if (isArray(obj)) {
     for (var i = 0; i < obj.length; i++) {
       callback(obj[i], i, obj);
     }
@@ -95,6 +97,7 @@ showdown.helper.forEach = function (obj, callback) {
     throw new Error('obj does not seem to be an array or an iterable object');
   }
 };
+export { forEach };
 
 /**
  * Standardidize extension name
@@ -102,16 +105,11 @@ showdown.helper.forEach = function (obj, callback) {
  * @param {string} s extension name
  * @returns {string}
  */
-showdown.helper.stdExtName = function (s) {
+const stdExtName = function (s) {
   'use strict';
   return s.replace(/[_?*+\/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
 };
-
-function escapeCharactersCallback (wholeMatch, m1) {
-  'use strict';
-  var charCodeToEscape = m1.charCodeAt(0);
-  return '¨E' + charCodeToEscape + 'E';
-}
+export { stdExtName };
 
 /**
  * Callback used to escape characters when passing through String.replace
@@ -120,7 +118,12 @@ function escapeCharactersCallback (wholeMatch, m1) {
  * @param {string} m1
  * @returns {string}
  */
-showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
+function escapeCharactersCallback (wholeMatch, m1) {
+  'use strict';
+  var charCodeToEscape = m1.charCodeAt(0);
+  return '¨E' + charCodeToEscape + 'E';
+}
+export { escapeCharactersCallback };
 
 /**
  * Escape characters in a string
@@ -130,7 +133,7 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
  * @param {boolean} afterBackslash
  * @returns {XML|string|void|*}
  */
-showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash) {
+const escapeCharacters = function (text, charsToEscape, afterBackslash) {
   'use strict';
   // First we have to escape the escape characters so that
   // we can build a character class out of them
@@ -145,6 +148,7 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
 
   return text;
 };
+export { escapeCharacters };
 
 var rgxFindMatchPos = function (str, left, right, flags) {
   'use strict';
@@ -213,7 +217,7 @@ var rgxFindMatchPos = function (str, left, right, flags) {
  * matchRecursiveRegExp("<div id=\"x\">test</div>", "<div\\b[^>]*>", "</div>", "gi")
  * returns: ["test"]
  */
-showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
+const matchRecursiveRegExp = function (str, left, right, flags) {
   'use strict';
 
   var matchPos = rgxFindMatchPos (str, left, right, flags),
@@ -229,6 +233,7 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   }
   return results;
 };
+export { matchRecursiveRegExp };
 
 /**
  *
@@ -239,10 +244,10 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
  * @param {string} flags
  * @returns {string}
  */
-showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right, flags) {
+const replaceRecursiveRegExp = function (str, replacement, left, right, flags) {
   'use strict';
 
-  if (!showdown.helper.isFunction(replacement)) {
+  if (!isFunction(replacement)) {
     var repStr = replacement;
     replacement = function () {
       return repStr;
@@ -278,6 +283,7 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
   }
   return finalStr;
 };
+export { replaceRecursiveRegExp };
 
 /**
  * Returns the index within the passed String object of the first occurrence of the specified regex,
@@ -289,17 +295,18 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
  * @returns {Number}
  * @throws InvalidArgumentError
  */
-showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
+const regexIndexOf = function (str, regex, fromIndex) {
   'use strict';
-  if (!showdown.helper.isString(str)) {
-    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
+  if (!isString(str)) {
+    throw 'InvalidArgumentError: first parameter of regexIndexOf function must be a string';
   }
   if (regex instanceof RegExp === false) {
-    throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
+    throw 'InvalidArgumentError: second parameter of regexIndexOf function must be an instance of RegExp';
   }
   var indexOf = str.substring(fromIndex || 0).search(regex);
   return (indexOf >= 0) ? (indexOf + (fromIndex || 0)) : indexOf;
 };
+export { regexIndexOf };
 
 /**
  * Splits the passed string object at the defined index, and returns an array composed of the two substrings
@@ -308,13 +315,14 @@ showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
  * @returns {[string,string]}
  * @throws InvalidArgumentError
  */
-showdown.helper.splitAtIndex = function (str, index) {
+const splitAtIndex = function (str, index) {
   'use strict';
   if (!showdown.helper.isString(str)) {
-    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
+    throw 'InvalidArgumentError: first parameter of regexIndexOf function must be a string';
   }
   return [str.substring(0, index), str.substring(index)];
 };
+export { splitAtIndex };
 
 /**
  * Obfuscate an e-mail address through the use of Character Entities,
@@ -325,7 +333,7 @@ showdown.helper.splitAtIndex = function (str, index) {
  * @param {string} mail
  * @returns {string}
  */
-showdown.helper.encodeEmailAddress = function (mail) {
+const encodeEmailAddress = function (mail) {
   'use strict';
   var encode = [
     function (ch) {
@@ -355,6 +363,7 @@ showdown.helper.encodeEmailAddress = function (mail) {
 
   return mail;
 };
+export { encodeEmailAddress };
 
 /**
  *
@@ -363,7 +372,7 @@ showdown.helper.encodeEmailAddress = function (mail) {
  * @param padString
  * @returns {string}
  */
-showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
+const padEnd = function padEnd (str, targetLength, padString) {
   'use strict';
   /*jshint bitwise: false*/
   // eslint-disable-next-line space-infix-ops
@@ -380,13 +389,14 @@ showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
     return String(str) + padString.slice(0,targetLength);
   }
 };
+export { padEnd };
 
 /**
  * Unescape HTML entities
  * @param txt
  * @returns {string}
  */
-showdown.helper.unescapeHTMLEntities = function (txt) {
+const unescapeHTMLEntities = function (txt) {
   'use strict';
 
   return txt
@@ -395,10 +405,12 @@ showdown.helper.unescapeHTMLEntities = function (txt) {
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&');
 };
+export { unescapeHTMLEntities };
 
-showdown.helper._hashHTMLSpan = function (html, globals) {
+const _hashHTMLSpan = function (html, globals) {
   return '¨C' + (globals.gHtmlSpans.push(html) - 1) + 'C';
 };
+export { _hashHTMLSpan };
 
 /**
  * Showdown's Event Object
@@ -407,7 +419,7 @@ showdown.helper._hashHTMLSpan = function (html, globals) {
  * @param {{}} params optional. params of the event
  * @constructor
  */
-showdown.helper.Event = function (name, text, params) {
+const Event = function (name, text, params) { // jshint ignore:line
   'use strict';
 
   var regexp = params.regexp || null;
@@ -472,41 +484,22 @@ showdown.helper.Event = function (name, text, params) {
     this._stopExecution = !bool;
   };
 };
-
-/**
- * POLYFILLS
- */
-// use this instead of builtin is undefined for IE8 compatibility
-if (typeof(console) === 'undefined') {
-  console = {
-    warn: function (msg) {
-      'use strict';
-      alert(msg);
-    },
-    log: function (msg) {
-      'use strict';
-      alert(msg);
-    },
-    error: function (msg) {
-      'use strict';
-      throw msg;
-    }
-  };
-}
+export { Event };
 
 /**
  * Common regexes.
  * We declare some common regexes to improve performance
  */
-showdown.helper.regexes = {
+const regexes = {
   asteriskDashTildeAndColon: /([*_:~])/g,
   asteriskDashAndTilde:      /([*_~])/g
 };
+export { regexes };
 
 /**
  * EMOJIS LIST
  */
-showdown.helper.emojis = {
+const emojis = {
   '+1':'\ud83d\udc4d',
   '-1':'\ud83d\udc4e',
   '100':'\ud83d\udcaf',
@@ -1685,3 +1678,4 @@ showdown.helper.emojis = {
   'octocat':  '<img width="20" height="20" align="absmiddle" src="https://assets-cdn.github.com/images/icons/emoji/octocat.png">',
   'showdown': '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
 };
+export { emojis };

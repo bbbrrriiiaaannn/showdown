@@ -1,54 +1,11 @@
+import {getDefaultOpts} from './options.js';
+import globalProps from './globalProps.js';
+
 /**
  * Created by Tivie on 06-01-2015.
  */
 // Private properties
-var showdown = {},
-    parsers = {},
-    extensions = {},
-    globalOptions = getDefaultOpts(true),
-    setFlavor = 'vanilla',
-    flavor = {
-      github: {
-        omitExtraWLInCodeBlocks:              true,
-        simplifiedAutoLink:                   true,
-        literalMidWordUnderscores:            true,
-        strikethrough:                        true,
-        tables:                               true,
-        tablesHeaderId:                       true,
-        ghCodeBlocks:                         true,
-        tasklists:                            true,
-        disableForced4SpacesIndentedSublists: true,
-        simpleLineBreaks:                     true,
-        requireSpaceBeforeHeadingText:        true,
-        ghCompatibleHeaderId:                 true,
-        ghMentions:                           true,
-        backslashEscapesHTMLTags:             true,
-        emoji:                                true,
-        splitAdjacentBlockquotes:             true
-      },
-      original: {
-        noHeaderId:                           true,
-        ghCodeBlocks:                         false
-      },
-      ghost: {
-        omitExtraWLInCodeBlocks:              true,
-        parseImgDimensions:                   true,
-        simplifiedAutoLink:                   true,
-        literalMidWordUnderscores:            true,
-        strikethrough:                        true,
-        tables:                               true,
-        tablesHeaderId:                       true,
-        ghCodeBlocks:                         true,
-        tasklists:                            true,
-        smoothLivePreview:                    true,
-        simpleLineBreaks:                     true,
-        requireSpaceBeforeHeadingText:        true,
-        ghMentions:                           false,
-        encodeEmails:                         true
-      },
-      vanilla: getDefaultOpts(true),
-      allOn: allOptionsOn()
-    };
+var showdown = {};
 
 /**
  * helper namespace
@@ -71,7 +28,7 @@ showdown.extensions = {};
  */
 showdown.setOption = function (key, value) {
   'use strict';
-  globalOptions[key] = value;
+  globalProps.globalOptions[key] = value;
   return this;
 };
 
@@ -83,7 +40,7 @@ showdown.setOption = function (key, value) {
  */
 showdown.getOption = function (key) {
   'use strict';
-  return globalOptions[key];
+  return globalProps.globalOptions[key];
 };
 
 /**
@@ -93,7 +50,7 @@ showdown.getOption = function (key) {
  */
 showdown.getOptions = function () {
   'use strict';
-  return globalOptions;
+  return globalProps.globalOptions;
 };
 
 /**
@@ -102,7 +59,7 @@ showdown.getOptions = function () {
  */
 showdown.resetOptions = function () {
   'use strict';
-  globalOptions = getDefaultOpts(true);
+  globalProps.globalOptions = getDefaultOpts(true);
 };
 
 /**
@@ -111,15 +68,15 @@ showdown.resetOptions = function () {
  */
 showdown.setFlavor = function (name) {
   'use strict';
-  if (!flavor.hasOwnProperty(name)) {
+  if (!globalProps.flavor.hasOwnProperty(name)) {
     throw Error(name + ' flavor was not found');
   }
   showdown.resetOptions();
-  var preset = flavor[name];
+  var preset = globalProps.flavor[name];
   setFlavor = name;
   for (var option in preset) {
     if (preset.hasOwnProperty(option)) {
-      globalOptions[option] = preset[option];
+      globalProps.globalOptions[option] = preset[option];
     }
   }
 };
@@ -130,7 +87,7 @@ showdown.setFlavor = function (name) {
  */
 showdown.getFlavor = function () {
   'use strict';
-  return setFlavor;
+  return globalProps.setFlavor;
 };
 
 /**
@@ -140,8 +97,8 @@ showdown.getFlavor = function () {
  */
 showdown.getFlavorOptions = function (name) {
   'use strict';
-  if (flavor.hasOwnProperty(name)) {
-    return flavor[name];
+  if (globalProps.flavor.hasOwnProperty(name)) {
+    return globalProps.flavor[name];
   }
 };
 
@@ -170,10 +127,10 @@ showdown.subParser = function (name, func) {
   'use strict';
   if (showdown.helper.isString(name)) {
     if (typeof func !== 'undefined') {
-      parsers[name] = func;
+      globalProps.parsers[name] = func;
     } else {
-      if (parsers.hasOwnProperty(name)) {
-        return parsers[name];
+      if (globalProps.parsers.hasOwnProperty(name)) {
+        return globalProps.parsers[name];
       } else {
         throw Error('SubParser named ' + name + ' not registered!');
       }
@@ -201,10 +158,10 @@ showdown.extension = function (name, ext) {
 
   // Getter
   if (showdown.helper.isUndefined(ext)) {
-    if (!extensions.hasOwnProperty(name)) {
+    if (!globalProps.extensions.hasOwnProperty(name)) {
       throw Error('Extension named ' + name + ' is not registered!');
     }
-    return extensions[name];
+    return globalProps.extensions[name];
 
     // Setter
   } else {
@@ -221,7 +178,7 @@ showdown.extension = function (name, ext) {
     var validExtension = validate(ext, name);
 
     if (validExtension.valid) {
-      extensions[name] = ext;
+      globalProps.extensions[name] = ext;
     } else {
       throw Error(validExtension.error);
     }
@@ -234,7 +191,7 @@ showdown.extension = function (name, ext) {
  */
 showdown.getAllExtensions = function () {
   'use strict';
-  return extensions;
+  return globalProps.extensions;
 };
 
 /**
@@ -243,7 +200,7 @@ showdown.getAllExtensions = function () {
  */
 showdown.removeExtension = function (name) {
   'use strict';
-  delete extensions[name];
+  delete globalProps.extensions[name];
 };
 
 /**
@@ -251,7 +208,7 @@ showdown.removeExtension = function (name) {
  */
 showdown.resetExtensions = function () {
   'use strict';
-  extensions = {};
+  globalProps.extensions = {};
 };
 
 /**
@@ -377,3 +334,21 @@ showdown.validateExtension = function (ext) {
   }
   return true;
 };
+
+import * as helpers from './helpers.js';
+showdown.helper = helpers;
+
+import * as makehtml from './subParsers/makehtml/index.js';
+Object.keys(makehtml).forEach(subparserId => {
+  showdown.subParser(`makehtml.${subparserId}`, makehtml[subparserId]);
+});
+
+import * as makemarkdown from './subParsers/makemarkdown/index.js';
+Object.keys(makemarkdown).forEach(subparserId => {
+  showdown.subParser(`makemarkdown.${subparserId}`, makemarkdown[subparserId]);
+});
+
+import Converter from './converter.js';
+showdown.Converter = Converter;
+
+export default showdown;
