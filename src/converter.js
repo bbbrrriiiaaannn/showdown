@@ -5,6 +5,8 @@
 import * as helpers from './helpers.js';
 import globalProps from './globalProps.js';
 import * as makehtml from './subParsers/makehtml/index.js';
+import nodeParser from './subParsers/makemarkdown/nodeParser.js';
+import validate from './validateExtension.js';
 
 /**
  * Showdown Converter class
@@ -107,14 +109,15 @@ const Converter = function (converterOptions) {
       name = ext;
 
       // LEGACY_SUPPORT CODE
-      if (showdown.extensions[ext]) {
-        console.warn('DEPRECATION WARNING: ' + ext + ' is an old extension that uses a deprecated loading method.' +
-          'Please inform the developer that the extension should be updated!');
-        legacyExtensionLoading(showdown.extensions[ext], ext);
-        return;
+      // if (showdown.extensions[ext]) {
+      //   console.warn('DEPRECATION WARNING: ' + ext + ' is an old extension that uses a deprecated loading method.' +
+      //     'Please inform the developer that the extension should be updated!');
+      //   legacyExtensionLoading(showdown.extensions[ext], ext);
+      //   return;
       // END LEGACY SUPPORT CODE
 
-      } else if (!helpers.isUndefined(globalProps.extensions[ext])) {
+      // } else if (!helpers.isUndefined(globalProps.extensions[ext])) {
+      if (!helpers.isUndefined(globalProps.extensions[ext])) {
         ext = globalProps.extensions[ext];
 
       } else {
@@ -373,7 +376,7 @@ const Converter = function (converterOptions) {
     // ex: <em>this is</em> <strong>sparta</strong>
     src = src.replace(/>[ \t]+</, '>¨NBSP;<');
 
-    var doc = window.document.createElement('div');
+    var doc = helpers.document.createElement('div');
     doc.innerHTML = src;
 
     var globals = {
@@ -391,7 +394,7 @@ const Converter = function (converterOptions) {
         mdDoc = '';
 
     for (var i = 0; i < nodes.length; i++) {
-      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], globals);
+      mdDoc += nodeParser(nodes[i], globals);
     }
 
     function clean (node) {

@@ -2,13 +2,13 @@
  * showdownjs helper functions
  */
 
-
-//  if (typeof document === 'undefined' && typeof window === 'undefined') {
-//   var jsdom = require('jsdom');
-//   this.window = new jsdom.JSDOM('', {}).window; // jshint ignore:line
-// }
-// const document = this.window.document;
-// export { document };
+let mockWindow;
+if (typeof document === 'undefined' && typeof window === 'undefined') {
+  var jsdom = require('jsdom');
+  mockWindow = new jsdom.JSDOM('', {}).window; // jshint ignore:line
+}
+const mockDocument = typeof document !== 'undefined' ? document : mockWindow.document;
+export { mockDocument as document };
 
 /**
  * Check if var is string
@@ -317,7 +317,7 @@ export { regexIndexOf };
  */
 const splitAtIndex = function (str, index) {
   'use strict';
-  if (!showdown.helper.isString(str)) {
+  if (!isString(str)) {
     throw 'InvalidArgumentError: first parameter of regexIndexOf function must be a string';
   }
   return [str.substring(0, index), str.substring(index)];

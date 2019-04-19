@@ -1,3 +1,5 @@
+const minify =  require('rollup-plugin-babel-minify');
+
 /**
  * Created by Tivie on 12-11-2014.
  */
@@ -41,27 +43,6 @@ module.exports = function (grunt) {
 
     clean: ['.build/'],
 
-    uglify: {
-      options: {
-        sourceMap: true,
-        banner: '/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */'
-      },
-      dist: {
-        files: {
-          'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
-        }
-      }
-    },
-
-    endline: {
-      dist: {
-        files: {
-          'dist/<%= pkg.name %>.js': 'dist/<%= pkg.name %>.js',
-          'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.min.js'
-        }
-      }
-    },
-
     jshint: {
       options: {
         jshintrc: '.jshintrc',
@@ -83,6 +64,40 @@ module.exports = function (grunt) {
         'src/**/*.js',
         'test/**/*.js'
       ]
+    },
+
+    rollup: {
+      options: {
+        format: 'umd',
+        sourcemap: true,
+        name: 'showdown'
+      },
+      dist: {
+        files: [{
+          src: 'src/showdown.js',
+          dest: 'dist/showdown.js',
+        }]
+      },
+      min: {
+        options: {
+          plugins: [minify({
+            comments: false
+          })]
+        },
+        files: [{
+          src: 'src/showdown.js',
+          dest: 'dist/showdown.min.js',
+        }]
+      },
+      test: {
+        options: {
+          format: 'cjs',
+        },
+        files: [{
+          src: 'src/showdown.js',
+          dest: '.build/showdown.js'
+        }]
+      }
     },
 
     conventionalChangelog: {
@@ -117,7 +132,8 @@ module.exports = function (grunt) {
           globals: ['should'],
           timeout: 3000,
           ignoreLeaks: true,
-          reporter: 'spec'
+          reporter: 'spec',
+          sourceMaps: true,
         }
       },
       unit: {
@@ -126,7 +142,9 @@ module.exports = function (grunt) {
           globals: ['should'],
           timeout: 3000,
           ignoreLeaks: true,
-          reporter: 'spec'
+          reporter: 'spec',
+          sourceMaps: true,
+
         }
       },
       single: {
@@ -135,7 +153,8 @@ module.exports = function (grunt) {
           globals: ['should'],
           timeout: 3000,
           ignoreLeaks: false,
-          reporter: 'spec'
+          reporter: 'spec',
+          sourceMaps: true,
         }
       }
     }
@@ -147,11 +166,9 @@ module.exports = function (grunt) {
    * Load common tasks for legacy and normal tests
    */
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-simple-mocha');
-  grunt.loadNpmTasks('grunt-endline');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
+  // grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-rollup');
 
   /**
    * Generate Changelog
@@ -204,12 +221,12 @@ module.exports = function (grunt) {
    * Tasks
    */
 
-  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:unit', 'simplemocha:functional', 'clean']);
-  grunt.registerTask('test-functional', ['concat:test', 'simplemocha:functional', 'clean']);
-  grunt.registerTask('test-unit', ['concat:test', 'simplemocha:unit', 'clean']);
-  grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
-  grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
-  grunt.registerTask('build-without-test', ['concat:dist', 'uglify', 'endline']);
+  grunt.registerTask('test', ['clean', /*'lint',*/ 'rollup:test', 'simplemocha:unit', 'simplemocha:functional', 'clean']);
+  grunt.registerTask('test-functional', ['rollup:test', 'simplemocha:functional', 'clean']);
+  grunt.registerTask('test-unit', ['rollup:test', 'simplemocha:unit', 'clean']);
+  grunt.registerTask('performance', ['rollup:test', 'performancejs', 'clean']);
+  grunt.registerTask('build', ['test', 'rollup:dist', 'rollup:min']);
+  grunt.registerTask('build-without-test', ['rollup:dist', 'rollup:min']);
   grunt.registerTask('prep-release', ['build', 'generate-changelog']);
 
   // Default task(s).
